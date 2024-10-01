@@ -1,8 +1,6 @@
 // src/agent/library/skills/combat.ts
 
-import { Bot } from "mineflayer";
 import { Entity } from "prismarine-entity";
-import { Vec3 } from "vec3";
 import pf from "mineflayer-pathfinder";
 import * as mc from "../../utils/mcdata.js";
 import * as world from "./world.js";
@@ -83,7 +81,7 @@ export async function defendSelf(
     ) {
       try {
         bot.pathfinder.setMovements(new pf.Movements(bot));
-        await bot.pathfinder.goto(new pf.goals.GoalFollow(enemy, 2), true);
+        await bot.pathfinder.goto(new pf.goals.GoalFollow(enemy, 2), () => {});
       } catch (err) {
         // Might error if entity dies, ignore
       }
@@ -156,11 +154,8 @@ export async function equipHighestAttack(bot: ExtendedBot): Promise<void> {
       );
   if (weapons.length === 0) return;
 
-  weapons.sort((a, b) => {
-    const attackA = mc.getAttackDamage(a);
-    const attackB = mc.getAttackDamage(b);
-    return attackB - attackA;
-  });
-  const weapon = weapons[0];
+  // @ts-ignore
+  weapons.sort((a, b) => a.attackDamage < b.attackDamage);
+  let weapon = weapons[0];
   if (weapon) await bot.equip(weapon, "hand");
 }

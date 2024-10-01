@@ -3,6 +3,7 @@
 import * as world from "./world.js";
 import { Bot } from "mineflayer";
 import { placeBlock } from "./worldInteraction.js";
+import { ExtendedBot } from "../../types/index.js";
 
 export function log(bot: Bot, message: string, chat = false): void {
   (bot as any).output += message + "\n";
@@ -11,7 +12,7 @@ export function log(bot: Bot, message: string, chat = false): void {
   }
 }
 
-export async function autoLight(bot: Bot): Promise<boolean> {
+export async function autoLight(bot: ExtendedBot): Promise<boolean> {
   if (world.shouldPlaceTorch(bot)) {
     try {
       const pos = world.getPosition(bot);

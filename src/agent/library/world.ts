@@ -1,12 +1,13 @@
-import { Bot } from "mineflayer";
 import { Block } from "prismarine-block";
 import { Movements, goals } from "mineflayer-pathfinder";
 import * as mc from "../../utils/mcdata.js";
 import { Vec3 } from "vec3";
 import { Entity } from "prismarine-entity";
+import { ExtendedBot } from "../../types/index.js";
+import { Item } from "prismarine-item";
 
 export function getNearestFreeSpace(
-  bot: Bot,
+  bot: ExtendedBot,
   size: number = 1,
   distance: number = 8
 ): Vec3 | undefined {
@@ -37,7 +38,7 @@ export function getNearestFreeSpace(
           !top ||
           top.name !== "air" ||
           !bottom ||
-          bottom.drops.length === 0 ||
+          (bottom.drops?.length ?? 0) === 0 ||
           !bottom.diggable
         ) {
           empty = false;
@@ -54,8 +55,8 @@ export function getNearestFreeSpace(
 }
 
 export function getNearestBlocks(
-  bot: Bot,
-  block_types: string[] | null = null,
+  bot: ExtendedBot,
+  block_types: string[] | string | null = null,
   distance: number = 16,
   count: number = 10000
 ): Block[] {
@@ -102,10 +103,10 @@ export function getNearestBlocks(
 }
 
 export function getNearestBlock(
-  bot: Bot,
+  bot: ExtendedBot,
   block_type: string,
   distance: number = 16
-): Block | null {
+): Block | undefined {
   /**
    * Get the nearest block of the given type.
    * @param {Bot} bot - The bot to get the nearest block for.
@@ -119,11 +120,11 @@ export function getNearestBlock(
   if (blocks.length > 0) {
     return blocks[0];
   }
-  return null;
+  return undefined;
 }
 
 export function getNearbyEntities(
-  bot: Bot,
+  bot: ExtendedBot,
   maxDistance: number = 16
 ): Entity[] {
   const entitiesWithDistance: { entity: Entity; distance: number }[] = [];
@@ -137,7 +138,7 @@ export function getNearbyEntities(
 }
 
 export function getNearestEntityWhere(
-  bot: Bot,
+  bot: ExtendedBot,
   predicate: (entity: Entity) => boolean,
   maxDistance: number = 16
 ): Entity | null {
@@ -148,7 +149,10 @@ export function getNearestEntityWhere(
   );
 }
 
-export function getNearbyPlayers(bot: Bot, maxDistance: number = 16): Entity[] {
+export function getNearbyPlayers(
+  bot: ExtendedBot,
+  maxDistance: number = 16
+): Entity[] {
   const playersWithDistance: { entity: Entity; distance: number }[] = [];
   for (const entity of Object.values(bot.entities)) {
     const distance = entity.position.distanceTo(bot.entity.position);
@@ -161,7 +165,7 @@ export function getNearbyPlayers(bot: Bot, maxDistance: number = 16): Entity[] {
   return playersWithDistance.map((item) => item.entity);
 }
 
-export function getInventoryStacks(bot: Bot): Item[] {
+export function getInventoryStacks(bot: ExtendedBot): Item[] {
   const inventory: Item[] = [];
   for (const item of bot.inventory.items()) {
     if (item != null) {
@@ -171,7 +175,9 @@ export function getInventoryStacks(bot: Bot): Item[] {
   return inventory;
 }
 
-export function getInventoryCounts(bot: Bot): { [key: string]: number } {
+export function getInventoryCounts(bot: ExtendedBot): {
+  [key: string]: number;
+} {
   /**
    * Get an object representing the bot's inventory.
    * @param {Bot} bot - The bot to get the inventory for.
@@ -193,7 +199,7 @@ export function getInventoryCounts(bot: Bot): { [key: string]: number } {
   return inventory;
 }
 
-export function getPosition(bot: Bot): Vec3 {
+export function getPosition(bot: ExtendedBot): Vec3 {
   /**
    * Get your position in the world (Note that y is vertical).
    * @param {Bot} bot - The bot to get the position for.
@@ -205,7 +211,7 @@ export function getPosition(bot: Bot): Vec3 {
   return bot.entity.position;
 }
 
-export function getNearbyEntityTypes(bot: Bot): string[] {
+export function getNearbyEntityTypes(bot: ExtendedBot): string[] {
   /**
    * Get a list of all nearby mob types.
    * @param {Bot} bot - The bot to get nearby mobs for.
@@ -216,14 +222,14 @@ export function getNearbyEntityTypes(bot: Bot): string[] {
   const mobs = getNearbyEntities(bot, 16);
   const found: string[] = [];
   for (const mob of mobs) {
-    if (!found.includes(mob.name)) {
+    if (mob.name && !found.includes(mob.name)) {
       found.push(mob.name);
     }
   }
   return found;
 }
 
-export function getNearbyPlayerNames(bot: Bot): string[] {
+export function getNearbyPlayerNames(bot: ExtendedBot): string[] {
   /**
    * Get a list of all nearby player names.
    * @param {Bot} bot - The bot to get nearby players for.
@@ -234,14 +240,21 @@ export function getNearbyPlayerNames(bot: Bot): string[] {
   const players = getNearbyPlayers(bot, 16);
   const found: string[] = [];
   for (const player of players) {
-    if (!found.includes(player.username) && player.username !== bot.username) {
+    if (
+      player.username &&
+      !found.includes(player.username) &&
+      player.username !== bot.username
+    ) {
       found.push(player.username);
     }
   }
   return found;
 }
 
-export function getNearbyBlockTypes(bot: Bot, distance: number = 16): string[] {
+export function getNearbyBlockTypes(
+  bot: ExtendedBot,
+  distance: number = 16
+): string[] {
   /**
    * Get a list of all nearby block names.
    * @param {Bot} bot - The bot to get nearby blocks for.
@@ -260,7 +273,10 @@ export function getNearbyBlockTypes(bot: Bot, distance: number = 16): string[] {
   return found;
 }
 
-export async function isClearPath(bot: Bot, target: Entity): Promise<boolean> {
+export async function isClearPath(
+  bot: ExtendedBot,
+  target: Entity
+): Promise<boolean> {
   /**
    * Check if there is a path to the target that requires no digging or placing blocks.
    * @param {Bot} bot - The bot to get the path for.
@@ -269,7 +285,6 @@ export async function isClearPath(bot: Bot, target: Entity): Promise<boolean> {
    */
   const movements = new Movements(bot);
   movements.canDig = false;
-  movements.canPlaceBlocks = false;
   const goal = new goals.GoalNear(
     target.position.x,
     target.position.y,
@@ -280,7 +295,7 @@ export async function isClearPath(bot: Bot, target: Entity): Promise<boolean> {
   return path.status === "success";
 }
 
-export function shouldPlaceTorch(bot: Bot): boolean {
+export function shouldPlaceTorch(bot: ExtendedBot): boolean {
   if (!bot.modes.isOn("torch_placing") || bot.interrupt_code) return false;
   const pos = getPosition(bot);
   // TODO: check light level instead of nearby torches, block.light is broken
@@ -296,7 +311,7 @@ export function shouldPlaceTorch(bot: Bot): boolean {
   return false;
 }
 
-export function getBiomeName(bot: Bot): string {
+export function getBiomeName(bot: ExtendedBot): string {
   /**
    * Get the name of the biome the bot is in.
    * @param {Bot} bot - The bot to get the biome for.

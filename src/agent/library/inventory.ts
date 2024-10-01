@@ -54,7 +54,7 @@ export async function discard(
 }
 
 export async function putInChest(
-  bot: Bot,
+  bot: ExtendedBot,
   itemName: string,
   num = -1
 ): Promise<boolean> {
@@ -84,7 +84,7 @@ export async function putInChest(
 }
 
 export async function takeFromChest(
-  bot: Bot,
+  bot: ExtendedBot,
   itemName: string,
   num = -1
 ): Promise<boolean> {
@@ -116,7 +116,7 @@ export async function takeFromChest(
   return true;
 }
 
-export async function viewChest(bot: Bot): Promise<boolean> {
+export async function viewChest(bot: ExtendedBot): Promise<boolean> {
   const chest = world.getNearestBlock(bot, "chest", 32);
   if (!chest) {
     log(bot, `Could not find a chest nearby.`);
@@ -143,13 +143,14 @@ export async function viewChest(bot: Bot): Promise<boolean> {
   return true;
 }
 
-export async function eat(bot: Bot, foodName = ""): Promise<boolean> {
+export async function eat(bot: ExtendedBot, foodName = ""): Promise<boolean> {
   let item: Item | undefined;
   let name: string;
   if (foodName) {
     item = bot.inventory.items().find((item) => item.name === foodName);
     name = foodName;
   } else {
+    // @ts-ignore
     item = bot.inventory.items().find((item) => item.foodPoints > 0);
     name = "food";
   }
@@ -164,7 +165,7 @@ export async function eat(bot: Bot, foodName = ""): Promise<boolean> {
 }
 
 export async function giveToPlayer(
-  bot: Bot,
+  bot: ExtendedBot,
   itemType: string,
   username: string,
   num = 1

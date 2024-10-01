@@ -104,36 +104,25 @@ export function isHostile(mob: Entity): boolean {
   );
 }
 
-export function getItemId(itemName: string): number | null {
+export function getItemId(itemName: string): number {
   const item = mcdata.itemsByName[itemName];
-  if (item) {
-    return item.id;
-  }
-  return null;
+
+  return item.id || 0;
 }
 
-export function getItemName(itemId: number): string | null {
+export function getItemName(itemId: number): string {
   const item = mcdata.items[itemId];
-  if (item) {
-    return item.name;
-  }
-  return null;
+  return item.name || "";
 }
 
-export function getBlockId(blockName: string): number | null {
+export function getBlockId(blockName: string): number {
   const block = mcdata.blocksByName[blockName];
-  if (block) {
-    return block.id;
-  }
-  return null;
+  return block.id || 0;
 }
 
-export function getBlockName(blockId: number): string | null {
+export function getBlockName(blockId: number): string {
   const block = mcdata.blocks[blockId];
-  if (block) {
-    return block.name;
-  }
-  return null;
+  return block.name || "";
 }
 
 export function getAllItems(ignore: string[] = []): any[] {

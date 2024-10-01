@@ -1,10 +1,9 @@
 // src/agent/library/skills/movement.ts
 
-import { Bot, Player } from "mineflayer";
+import { Bot } from "mineflayer";
 import pf from "mineflayer-pathfinder";
 import { Vec3 } from "vec3";
 import { log } from "./utility";
-import * as mc from "../../utils/mcdata.js";
 import * as world from "./world.js";
 import { ExtendedBot } from "../../types";
 

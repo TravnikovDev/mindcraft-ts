@@ -1,9 +1,9 @@
-export * from "./utility";
-export * from "./combat";
-export * from "./movement";
-export * from "./worldInteraction";
-export * from "./inventory";
-export * from "./crafting";
+import * as utility from "./utility";
+import * as combat from "./combat";
+import * as movement from "./movement";
+import * as worldInteraction from "./worldInteraction";
+import * as inventory from "./inventory";
+import * as crafting from "./crafting";
 import * as world from "./world.js";
 
 interface NamedFunction extends Function {
@@ -29,7 +29,18 @@ export function docHelper(
 export function getSkillDocs(): string {
   let docstring =
     "\n*SKILL DOCS\nThese skills are JavaScript functions that can be called when writing actions and skills.\n";
-  docstring += docHelper(Object.values(skills) as NamedFunction[], "skills");
+  docstring += docHelper(
+    Object.values({
+      ...utility,
+      ...combat,
+      ...movement,
+      ...worldInteraction,
+      ...inventory,
+      ...crafting,
+      ...world,
+    }) as NamedFunction[],
+    "skills"
+  );
   docstring += docHelper(Object.values(world) as NamedFunction[], "world");
   return docstring + "*\n";
 }

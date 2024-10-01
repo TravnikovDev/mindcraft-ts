@@ -2,11 +2,13 @@
 
 import { Bot } from "mineflayer";
 import { Vec3 } from "vec3";
-import pf from "mineflayer-pathfinder";
-import { log } from "./utility";
+import pf, { SafeBlock } from "mineflayer-pathfinder";
+import { Block } from "prismarine-block";
+import { autoLight, log } from "./utility";
 import * as mc from "../../utils/mcdata.js";
 import * as world from "./world.js";
 import { ExtendedBot } from "../../types";
+import { goToPosition } from "./movement";
 
 // Move functions like placeBlock, breakBlockAt, collectBlock, etc.
 
@@ -223,7 +225,11 @@ export async function placeBlock(
     await new Promise((resolve) => setTimeout(resolve, 200));
     return true;
   } catch (err) {
-    log(bot, `Failed to place ${blockType} at ${targetDest}: ${err.message}`);
+    if (err instanceof Error) {
+      log(bot, `Failed to place ${blockType} at ${targetDest}: ${err.message}`);
+    } else {
+      log(bot, `Failed to place ${blockType} at ${targetDest}: ${String(err)}`);
+    }
     return false;
   }
 }
@@ -327,7 +333,9 @@ export async function collectBlock(
     }
     const movements = new pf.Movements(bot);
     movements.dontMineUnderFallingBlock = false;
-    blocks = blocks.filter((block) => movements.safeToBreak(block));
+    blocks = blocks.filter((block) =>
+      movements.safeToBreak(block as any as SafeBlock)
+    );
 
     if (blocks.length === 0) {
       if (collected === 0) log(bot, `No ${blockType} nearby to collect.`);
@@ -346,14 +354,18 @@ export async function collectBlock(
       collected++;
       await autoLight(bot);
     } catch (err) {
-      if (err.name === "NoChests") {
+      if (err instanceof Error && err.name === "NoChests") {
         log(
           bot,
           `Failed to collect ${blockType}: Inventory full, no place to deposit.`
         );
         break;
       } else {
-        log(bot, `Failed to collect ${blockType}: ${err.message}.`);
+        if (err instanceof Error) {
+          log(bot, `Failed to collect ${blockType}: ${err.message}.`);
+        } else {
+          log(bot, `Failed to collect ${blockType}: ${String(err)}.`);
+        }
         continue;
       }
     }
@@ -468,7 +480,10 @@ export async function pickupNearbyItems(bot: ExtendedBot): Promise<boolean> {
   let pickedUp = 0;
   while (nearestItem) {
     bot.pathfinder.setMovements(new pf.Movements(bot));
-    await bot.pathfinder.goto(new pf.goals.GoalFollow(nearestItem, 0.8), true);
+    await bot.pathfinder.goto(
+      new pf.goals.GoalFollow(nearestItem, 0.8),
+      () => {}
+    );
     await new Promise((resolve) => setTimeout(resolve, 200));
     const prev = nearestItem;
     nearestItem = getNearestItem(bot);

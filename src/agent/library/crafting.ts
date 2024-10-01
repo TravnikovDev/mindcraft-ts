@@ -1,13 +1,12 @@
 // src/agent/library/skills/crafting.ts
 
-import { Bot, Recipe, Item } from "mineflayer";
 import { log } from "./utility";
 import * as mc from "../../utils/mcdata.js";
 import * as world from "./world.js";
 import { goToNearestBlock } from "./movement";
 import { collectBlock, placeBlock } from "./worldInteraction";
-import { Vec3 } from "vec3";
 import { ExtendedBot } from "../../types";
+import { Item } from "prismarine-item";
 
 export async function craftRecipe(
   bot: ExtendedBot,
@@ -20,7 +19,7 @@ export async function craftRecipe(
 
   // Get recipes that don't require a crafting table
   let recipes = bot.recipesFor(mc.getItemId(itemName), null, 1, null);
-  let craftingTable = null;
+  let craftingTable;
   const craftingTableRange = 32;
   if (!recipes || recipes.length === 0) {
     // Look for crafting table
@@ -34,7 +33,12 @@ export async function craftRecipe(
       const hasTable = world.getInventoryCounts(bot)["crafting_table"] > 0;
       if (hasTable) {
         const pos = world.getNearestFreeSpace(bot, 1, 6);
-        await placeBlock(bot, "crafting_table", pos.x, pos.y, pos.z);
+        if (pos) {
+          await placeBlock(bot, "crafting_table", pos.x, pos.y, pos.z);
+        } else {
+          log(bot, "No suitable position found to place the crafting table.");
+          return false;
+        }
         craftingTable = world.getNearestBlock(
           bot,
           "crafting_table",
@@ -90,7 +94,7 @@ export async function craftRecipe(
     }
     return true;
   } catch (err) {
-    log(bot, `Failed to craft ${itemName}: ${err.message}`);
+    log(bot, `Failed to craft ${itemName}: ${(err as Error).message}`);
     if (placedTable) {
       await collectBlock(bot, "crafting_table", 1);
     }
@@ -128,7 +132,12 @@ export async function smeltItem(
     const hasFurnace = world.getInventoryCounts(bot)["furnace"] > 0;
     if (hasFurnace) {
       const pos = world.getNearestFreeSpace(bot, 1, 32);
-      await placeBlock(bot, "furnace", pos.x, pos.y, pos.z);
+      if (pos) {
+        await placeBlock(bot, "furnace", pos.x, pos.y, pos.z);
+      } else {
+        log(bot, "No suitable position found to place the furnace.");
+        return false;
+      }
       furnaceBlock = world.getNearestBlock(bot, "furnace", 32);
       placedFurnace = true;
     }
@@ -184,7 +193,12 @@ export async function smeltItem(
     log(bot, `Added ${putFuel} ${mc.getItemName(fuel.type)} to furnace fuel.`);
   }
   // Put the items in the furnace
-  await furnace.putInput(mc.getItemId(itemName), null, num);
+  const itemId = mc.getItemId(itemName);
+  if (itemId === null) {
+    log(bot, `Invalid item name: ${itemName}`);
+    return false;
+  }
+  await furnace.putInput(itemId, null, num);
   // Wait for the items to smelt
   let total = 0;
   let collectedLast = true;
