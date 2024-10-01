@@ -2,12 +2,13 @@ import { Agent } from "./agent"; // Adjust the import path as necessary
 
 export class SelfPrompter {
   private agent: Agent;
-  private on: boolean;
   private loop_active: boolean;
   private interrupt: boolean;
-  private prompt: string;
   private idle_time: number;
   private cooldown: number;
+
+  public prompt: string;
+  public on: boolean;
 
   constructor(agent: Agent) {
     this.agent = agent;
