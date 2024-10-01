@@ -10,6 +10,16 @@ interface NamedFunction extends Function {
   name: string;
 }
 
+export const skills = {
+  ...utility,
+  ...combat,
+  ...movement,
+  ...worldInteraction,
+  ...inventory,
+  ...crafting,
+  ...world,
+};
+
 export function docHelper(
   functions: NamedFunction[],
   module_name: string
@@ -29,18 +39,7 @@ export function docHelper(
 export function getSkillDocs(): string {
   let docstring =
     "\n*SKILL DOCS\nThese skills are JavaScript functions that can be called when writing actions and skills.\n";
-  docstring += docHelper(
-    Object.values({
-      ...utility,
-      ...combat,
-      ...movement,
-      ...worldInteraction,
-      ...inventory,
-      ...crafting,
-      ...world,
-    }) as NamedFunction[],
-    "skills"
-  );
+  docstring += docHelper(Object.values(skills) as NamedFunction[], "skills");
   docstring += docHelper(Object.values(world) as NamedFunction[], "world");
   return docstring + "*\n";
 }
