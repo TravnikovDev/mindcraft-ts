@@ -1,4 +1,9 @@
-import * as skills from "./skills.js";
+export * from "./utility";
+export * from "./combat";
+export * from "./movement";
+export * from "./worldInteraction";
+export * from "./inventory";
+export * from "./crafting";
 import * as world from "./world.js";
 
 interface NamedFunction extends Function {
