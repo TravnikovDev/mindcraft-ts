@@ -189,7 +189,7 @@ export class Prompter {
     return prompt;
   }
 
-  async promptConvo(messages: Message[]): Promise<string> {
+  async promptConvo(messages: Message[]): Promise<any> {
     let prompt = this.profile.conversing;
     prompt = await this.replaceStrings(prompt, messages, this.convo_examples);
     return await this.chat_model.sendRequest(messages, prompt);
