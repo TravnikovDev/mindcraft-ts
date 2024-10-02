@@ -16,18 +16,17 @@ import { NPCController } from "./npc/controller";
 import { MemoryBank } from "./memory_bank";
 import { SelfPrompter } from "./self_prompter";
 import settings from "../../settings";
-import { Bot } from "mineflayer";
 import { ExtendedBot } from "../types";
 
 export class Agent {
-  prompter: Prompter;
-  name: string;
-  history: History;
-  coder: Coder;
-  npc: NPCController;
-  memory_bank: MemoryBank;
-  self_prompter: SelfPrompter;
-  bot: ExtendedBot;
+  prompter!: Prompter;
+  name!: string;
+  history!: History;
+  coder!: Coder;
+  npc!: NPCController;
+  memory_bank!: MemoryBank;
+  self_prompter!: SelfPrompter;
+  bot!: ExtendedBot;
   shut_up: boolean = false;
 
   async start(
@@ -94,6 +93,11 @@ export class Agent {
           "pufferfish",
           "chicken",
         ],
+        eatingTimeout: 3000,
+        ignoreInventoryCheck: false,
+        checkOnItemPickup: true,
+        offhand: false,
+        equipOldItem: true,
       };
 
       if (save_data && save_data.self_prompt) {
@@ -105,7 +109,7 @@ export class Agent {
         this.handleMessage("system", init_message, 2);
       } else {
         this.bot.chat("Hello world! I am " + this.name);
-        this.bot.emit("finished_executing");
+        (this.bot as any).emit("finished_executing");
       }
 
       this.startEvents();
@@ -289,7 +293,7 @@ export class Agent {
         );
       }
     });
-    this.bot.on("idle", () => {
+    (this.bot as any).on("idle", () => {
       this.bot.clearControlStates();
       this.bot.pathfinder.stop(); // clear any lingering pathfinder
       this.bot.modes.unPauseAll();

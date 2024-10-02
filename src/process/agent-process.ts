@@ -1,11 +1,15 @@
 import { spawn, ChildProcess } from "child_process";
 
 export class AgentProcess {
+  name: string | undefined;
   start(
     profile: string,
     load_memory: boolean = false,
     init_message: string | null = null
   ): void {
+    if (!this.name) {
+      throw new Error("Agent name is not defined");
+    }
     const args: string[] = ["src/process/init-agent.ts", this.name];
     args.push("-p", profile);
     if (load_memory) args.push("-l", String(load_memory));
@@ -13,7 +17,6 @@ export class AgentProcess {
 
     const agentProcess: ChildProcess = spawn("bun", args, {
       stdio: "inherit",
-      stderr: "inherit",
     });
 
     let last_restart: number = Date.now();

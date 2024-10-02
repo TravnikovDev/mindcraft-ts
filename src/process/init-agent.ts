@@ -1,4 +1,4 @@
-import { Agent } from "../agent/agent.js";
+import { Agent } from "../agent/agent";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 
@@ -34,4 +34,8 @@ const argv: Argv = yargs(hideBin(process.argv))
     description: "Automatically prompt the agent on startup",
   }).argv as Argv;
 
-new Agent().start(argv.profile, argv.load_memory, argv.init_message);
+new Agent().start(
+  argv.profile || "unknown_profile",
+  argv.load_memory,
+  argv.init_message
+);

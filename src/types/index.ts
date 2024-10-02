@@ -8,4 +8,5 @@ export interface ExtendedBot extends Bot {
   output?: string; // If you have an output plugin
   lastDamageTaken?: number;
   lastDamageTime?: number;
+  emit: (event: string, ...args: any[]) => boolean;
 }
