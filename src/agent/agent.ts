@@ -151,7 +151,7 @@ export class Agent {
         }
         this.bot.chat(`*${source} used ${user_command_name.substring(1)}*`);
         if (user_command_name === "!newAction") {
-          // all user initiated commands are ignored by the bot except for this one
+          // all user-initiated commands are ignored by the bot except for this one
           // add the preceding message to the history to give context for newAction
           this.history.add(source, message);
         }
@@ -303,6 +303,7 @@ export class Agent {
     // Init NPC controller
     this.npc.init();
 
+    // Main update loop
     // This update loop ensures that each update() is called one at a time, even if it takes longer than the interval
     const INTERVAL = 300;
     let last = Date.now();
@@ -322,12 +323,36 @@ export class Agent {
   }
 
   async update(delta: number): Promise<void> {
+    // Update modes
     await this.bot.modes.update();
+
+    // Update self-prompter
     await this.self_prompter.update(delta);
+
+    // Check if bot is idle
+    console.log("Bot is idle:", this.isIdle());
+    if (this.isIdle()) {
+      // If idle, initiate self-prompting with a default goal
+      if (!this.self_prompter.on) {
+        const defaultGoal =
+          "Act for your own survival. Collect resources, upgrade tools, build shelter, and explore the world.";
+        this.self_prompter.start(defaultGoal);
+        console.log(
+          "Bot is idle. Starting self-prompting with goal:",
+          defaultGoal
+        );
+      }
+    }
   }
 
   isIdle(): boolean {
-    return !this.coder.executing && !this.coder.generating;
+    return (
+      !this.coder.executing &&
+      !this.coder.generating &&
+      !this.bot.pathfinder.isMoving() &&
+      !this.bot.pathfinder.isMining() &&
+      !this.bot.pathfinder.isBuilding()
+    );
   }
 
   cleanKill(msg: string = "Killing agent process..."): void {
