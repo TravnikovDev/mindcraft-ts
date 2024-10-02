@@ -1,15 +1,12 @@
 import { spawn, ChildProcess } from "child_process";
 
 export class AgentProcess {
-  name: string | undefined;
+  name!: string;
   start(
     profile: string,
     load_memory: boolean = false,
     init_message: string | null = null
   ): void {
-    if (!this.name) {
-      throw new Error("Agent name is not defined");
-    }
     const args: string[] = ["src/process/init-agent.ts", this.name];
     args.push("-p", profile);
     if (load_memory) args.push("-l", String(load_memory));
