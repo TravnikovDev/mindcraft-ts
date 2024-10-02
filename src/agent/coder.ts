@@ -30,7 +30,7 @@ export class Coder {
     this.resume_func = null;
     this.resume_name = null;
 
-    readFile("./bots/template.js", "utf8", (err, data) => {
+    readFile("./bots/template.ts", "utf8", (err, data) => {
       if (err) throw err;
       this.code_template = data;
     });
@@ -101,7 +101,7 @@ export class Coder {
     });
   }
 
-  async generateCode(agent_history: History): Promise<string | null> {
+  async generateCode(agent_history: History): Promise<string | null | void> {
     // wrapper to prevent overlapping code generation loops
     await this.stop();
     this.generating = true;

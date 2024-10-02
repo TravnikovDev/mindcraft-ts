@@ -6,4 +6,6 @@ export interface ExtendedBot extends Bot {
   tool: any; // If you have a tool plugin
   collectBlock: any; // If you have a collectBlock plugin
   output?: string; // If you have an output plugin
+  lastDamageTaken?: number;
+  lastDamageTime?: number;
 }

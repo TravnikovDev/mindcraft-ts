@@ -1,8 +1,8 @@
 // src/agent/commands/actions.ts
 
-import * as skills from "../library/skills";
 import settings from "../../../settings";
 import { Agent } from "../agent";
+import { skills } from "../library";
 
 interface ExecutionResult {
   interrupted: boolean;
@@ -58,6 +58,7 @@ export const actionsList: Action[] = [
       await agent.coder.stop();
       agent.coder.clear();
       agent.coder.cancelResume();
+      // @ts-ignore
       agent.bot.emit("idle");
       let msg = "Agent stopped.";
       if (agent.self_prompter.on) msg += " Self-prompting still active.";
@@ -413,8 +414,10 @@ export const actionsList: Action[] = [
       quantity: number = 1
     ): Promise<string> {
       await agent.npc.setGoal(name, quantity);
+      // @ts-ignore
       agent.bot.emit("idle"); // To trigger the goal
-      return "Set npc goal: " + agent.npc.data.curr_goal.name;
+      const currGoal = agent.npc.data.curr_goal;
+      return "Set npc goal: " + (currGoal ? currGoal.name : "unknown");
     },
   },
 ];

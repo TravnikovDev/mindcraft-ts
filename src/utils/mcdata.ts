@@ -107,7 +107,7 @@ export function isHostile(mob: Entity): boolean {
 export function getItemId(itemName: string): number {
   const item = mcdata.itemsByName[itemName];
 
-  return item.id || 0;
+  return item?.id || 0;
 }
 
 export function getItemName(itemId: number): string {
