@@ -17,12 +17,6 @@ import { MemoryBank } from "./memory_bank";
 import { SelfPrompter } from "./self_prompter";
 import settings from "../../settings";
 import { ExtendedBot } from "../types";
-import {
-  collectBlocksSchema,
-  craftItemSchema,
-} from "./schemas/itemCollectionAndManagement";
-import { goToPlayerSchema } from "./schemas/movementAndNavigation";
-import { skills } from "./library";
 
 export class Agent {
   prompter!: Prompter;
@@ -157,6 +151,8 @@ export class Agent {
         }
         this.bot.chat(`*${source} used ${user_command_name.substring(1)}*`);
         if (user_command_name === "!newAction") {
+          // all user initiated commands are ignored by the bot except for this one
+          // add the preceding message to the history to give context for newAction
           this.history.add(source, message);
         }
         const execute_res = await executeCommand(this, message);
@@ -184,122 +180,69 @@ export class Agent {
     await this.history.add(source, message);
     this.history.save();
 
-    if (!self_prompt && this.self_prompter.on) max_responses = 1;
+    if (!self_prompt && this.self_prompter.on) max_responses = 1; // force only respond to this message, then let self-prompting take over
 
     for (let i = 0; i < max_responses; i++) {
       if (checkInterrupt()) break;
       const history = this.history.getHistory();
       const res = await this.prompter.promptConvo(history);
 
-      // Check if the response contains a function call
-      if (res.function_call) {
-        const functionName = res.function_call.name;
-        const argsString = res.function_call.arguments;
+      const command_name = containsCommand(res);
 
-        // Parse the arguments JSON string
-        let args: any;
-        try {
-          args = JSON.parse(argsString);
-        } catch (error) {
-          console.error("Failed to parse function arguments:", error);
+      if (command_name) {
+        console.log(`Full response: ""${res}""`);
+        const truncatedRes = truncCommandMessage(res); // everything after the command is ignored
+        this.history.add(this.name, truncatedRes);
+        if (!commandExists(command_name)) {
+          this.history.add("system", `Command ${command_name} does not exist.`);
+          console.warn("Agent hallucinated command:", command_name);
+          continue;
+        }
+        if (command_name === "!stopSelfPrompt" && self_prompt) {
           this.history.add(
             "system",
-            "Error parsing function arguments. Please try again."
+            `Cannot stopSelfPrompt unless requested by user.`
           );
-          return false;
+          continue;
         }
 
-        // Validate the arguments using Zod
-        let validatedData: any;
-        try {
-          switch (functionName) {
-            case "collectBlocks":
-              validatedData = collectBlocksSchema.parse({
-                function: functionName,
-                arguments: args,
-              });
-              break;
-            case "goToPlayer":
-              validatedData = goToPlayerSchema.parse({
-                function: functionName,
-                arguments: args,
-              });
-              break;
-            case "craftItem":
-              validatedData = craftItemSchema.parse({
-                function: functionName,
-                arguments: args,
-              });
-              break;
-            // Add cases for other functions
-            default:
-              console.error(`Unknown function: ${functionName}`);
-              this.history.add(
-                "system",
-                `Error: Unknown function '${functionName}'.`
-              );
-              return false;
-          }
-        } catch (validationError) {
-          console.error("Validation error:", validationError);
+        if (checkInterrupt()) break;
+        this.self_prompter.handleUserPromptedCmd(
+          self_prompt,
+          isAction(command_name)
+        );
 
-          // Inform the player or the system
-          this.bot.chat("Sorry, I couldn't understand that action.");
-          this.history.add(
-            "system",
-            `Validation error: ${(validationError as Error).message}`
-          );
-
-          // Optionally, request the model to correct its output
-          // You can add a message to the conversation history to guide the model
-          this.history.add(
-            "system",
-            "Please ensure that your function call matches the expected format."
-          );
-
-          return false;
+        if (settings.verbose_commands) {
+          this.cleanChat(truncatedRes);
+        } else {
+          const pre_message = truncatedRes
+            .substring(0, truncatedRes.indexOf(command_name))
+            .trim();
+          let chat_message = `*used ${command_name.substring(1)}*`;
+          if (pre_message.length > 0)
+            chat_message = `${pre_message}  ${chat_message}`;
+          this.cleanChat(chat_message);
         }
 
-        // Execute the function
-        await this.executeFunction(functionName, validatedData.arguments);
+        const execute_res = await executeCommand(this, truncatedRes);
 
-        return true;
+        console.log("Agent executed:", command_name, "and got:", execute_res);
+        used_command = true;
+
+        if (execute_res) this.history.add("system", execute_res);
+        else break;
       } else {
-        // Handle non-function call responses (e.g., conversational text)
-        this.history.add(this.name, res.content);
-        this.cleanChat(res.content);
-        return false;
+        // conversation response
+        this.history.add(this.name, res);
+        this.cleanChat(res);
+        console.log("Purely conversational response:", res);
+        break;
       }
+      this.history.save();
     }
 
     this.bot.emit("finished_executing");
     return used_command;
-  }
-
-  async executeFunction(functionName: string, args: any): Promise<void> {
-    switch (functionName) {
-      case "collectBlocks":
-        await skills.collectBlock(this.bot, args.blockType, args.quantity);
-        this.bot.chat(
-          `I have collected ${args.quantity} ${args.blockType}(s).`
-        );
-        break;
-      case "goToPlayer":
-        await skills.goToPlayer(this.bot, args.playerName, args.distance);
-        this.bot.chat(`I have arrived at ${args.playerName}'s location.`);
-        break;
-      case "craftItem":
-        await skills.craftRecipe(this.bot, args.itemName, args.quantity);
-        this.bot.chat(`I have crafted ${args.quantity} ${args.itemName}(s).`);
-        break;
-      // Add cases for other functions
-      default:
-        console.error(`executeFunction: Unknown function ${functionName}`);
-        this.bot.chat(
-          `I don't know how to perform the action '${functionName}'.`
-        );
-        break;
-    }
   }
 
   startEvents(): void {
