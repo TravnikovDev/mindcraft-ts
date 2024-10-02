@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 export const goToPlayerFunctionSchema = {
   name: "goToPlayer",
   description: "Move to a specific player's location.",
@@ -18,6 +20,14 @@ export const goToPlayerFunctionSchema = {
   },
 };
 
+export const goToPlayerSchema = z.object({
+  function: z.literal("goToPlayer"),
+  arguments: z.object({
+    playerName: z.string(),
+    distance: z.number().nonnegative().optional(),
+  }),
+});
+
 export const goToPositionFunctionSchema = {
   name: "goToPosition",
   description: "Move to specific coordinates.",
@@ -31,6 +41,15 @@ export const goToPositionFunctionSchema = {
     required: ["x", "y", "z"],
   },
 };
+
+export const goToPositionSchema = z.object({
+  function: z.literal("goToPosition"),
+  arguments: z.object({
+    x: z.number(),
+    y: z.number(),
+    z: z.number(),
+  }),
+});
 
 export const followPlayerFunctionSchema = {
   name: "followPlayer",
@@ -52,6 +71,14 @@ export const followPlayerFunctionSchema = {
   },
 };
 
+export const followPlayerSchema = z.object({
+  function: z.literal("followPlayer"),
+  arguments: z.object({
+    playerName: z.string(),
+    distance: z.number().nonnegative().optional(),
+  }),
+});
+
 export const moveAwayFunctionSchema = {
   name: "moveAway",
   description: "Move away from the current location or an entity.",
@@ -67,3 +94,10 @@ export const moveAwayFunctionSchema = {
     required: ["distance"],
   },
 };
+
+export const moveAwaySchema = z.object({
+  function: z.literal("moveAway"),
+  arguments: z.object({
+    distance: z.number().min(1),
+  }),
+});

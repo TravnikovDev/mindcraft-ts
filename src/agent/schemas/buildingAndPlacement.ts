@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 export const placeBlockFunctionSchema = {
   name: "placeBlock",
   description: "Place a block at a specified location.",
@@ -18,6 +20,19 @@ export const placeBlockFunctionSchema = {
   },
 };
 
+export const placeBlockSchema = z.object({
+  function: z.literal("placeBlock"),
+  arguments: z.object({
+    blockType: z.string(),
+    x: z.number(),
+    y: z.number(),
+    z: z.number(),
+    face: z
+      .enum(["top", "bottom", "north", "south", "east", "west"])
+      .optional(),
+  }),
+});
+
 export const buildStructureFunctionSchema = {
   name: "buildStructure",
   description: "Build a predefined structure at the current location.",
@@ -36,3 +51,11 @@ export const buildStructureFunctionSchema = {
     required: ["structureType"],
   },
 };
+
+export const buildStructureSchema = z.object({
+  function: z.literal("buildStructure"),
+  arguments: z.object({
+    structureType: z.string(),
+    material: z.string().optional(),
+  }),
+});

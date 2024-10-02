@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 export const collectBlocksFunctionSchema = {
   name: "collectBlocks",
   description: "Collect a specific quantity of a block type.",
@@ -15,6 +17,14 @@ export const collectBlocksFunctionSchema = {
   },
 };
 
+export const collectBlocksSchema = z.object({
+  function: z.literal("collectBlocks"),
+  arguments: z.object({
+    blockType: z.string(),
+    quantity: z.number().int().min(1),
+  }),
+});
+
 export const collectBlockFunctionSchema = {
   name: "collectBlock",
   description: "Collect a block of a specific type.",
@@ -27,6 +37,13 @@ export const collectBlockFunctionSchema = {
   },
 };
 
+export const collectBlockSchema = z.object({
+  function: z.literal("collectBlock"),
+  arguments: z.object({
+    blockType: z.string(),
+  }),
+});
+
 export const pickupNearbyItemsFunctionSchema = {
   name: "pickupNearbyItems",
   description: "Pick up nearby items.",
@@ -35,6 +52,11 @@ export const pickupNearbyItemsFunctionSchema = {
     properties: {},
   },
 };
+
+export const pickupNearbyItemsSchema = z.object({
+  function: z.literal("pickupNearbyItems"),
+  arguments: z.object({}),
+});
 
 export const craftItemFunctionSchema = {
   name: "craftItem",
@@ -54,6 +76,14 @@ export const craftItemFunctionSchema = {
   },
 };
 
+export const craftItemSchema = z.object({
+  function: z.literal("craftItem"),
+  arguments: z.object({
+    itemName: z.string(),
+    quantity: z.number().int().min(1).default(1),
+  }),
+});
+
 export const smeltItemFunctionSchema = {
   name: "smeltItem",
   description: "Smelt a specified item.",
@@ -71,3 +101,11 @@ export const smeltItemFunctionSchema = {
     required: ["itemName"],
   },
 };
+
+export const smeltItemSchema = z.object({
+  function: z.literal("smeltItem"),
+  arguments: z.object({
+    itemName: z.string(),
+    quantity: z.number().int().min(1).default(1),
+  }),
+});

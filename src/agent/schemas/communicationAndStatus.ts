@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 export const chatFunctionSchema = {
   name: "chat",
   description: "Send a chat message.",
@@ -9,6 +11,13 @@ export const chatFunctionSchema = {
     required: ["message"],
   },
 };
+
+export const chatSchema = z.object({
+  function: z.literal("chat"),
+  arguments: z.object({
+    message: z.string(),
+  }),
+});
 
 export const nearbyBlocksFunctionSchema = {
   name: "nearbyBlocks",
@@ -26,6 +35,13 @@ export const nearbyBlocksFunctionSchema = {
   },
 };
 
+export const nearbyBlocksSchema = z.object({
+  function: z.literal("nearbyBlocks"),
+  arguments: z.object({
+    radius: z.number().min(1).default(10).optional(),
+  }),
+});
+
 export const nearbyEntitiesFunctionSchema = {
   name: "nearbyEntities",
   description: "List nearby entities.",
@@ -41,3 +57,10 @@ export const nearbyEntitiesFunctionSchema = {
     },
   },
 };
+
+export const nearbyEntitiesSchema = z.object({
+  function: z.literal("nearbyEntities"),
+  arguments: z.object({
+    radius: z.number().min(1).default(10).optional(),
+  }),
+});

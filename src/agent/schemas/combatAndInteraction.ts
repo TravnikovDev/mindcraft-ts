@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 export const attackEntityFunctionSchema = {
   name: "attackEntity",
   description: "Attack a specific entity.",
@@ -10,6 +12,13 @@ export const attackEntityFunctionSchema = {
   },
 };
 
+export const attackEntitySchema = z.object({
+  function: z.literal("attackEntity"),
+  arguments: z.object({
+    entityType: z.string(),
+  }),
+});
+
 export const defendSelfFunctionSchema = {
   name: "defendSelf",
   description: "Defend against nearby threats.",
@@ -18,6 +27,11 @@ export const defendSelfFunctionSchema = {
     properties: {},
   },
 };
+
+export const defendSelfSchema = z.object({
+  function: z.literal("defendSelf"),
+  arguments: z.object({}),
+});
 
 export const huntEntityFunctionSchema = {
   name: "huntEntity",
@@ -35,3 +49,11 @@ export const huntEntityFunctionSchema = {
     required: ["entityType"],
   },
 };
+
+export const huntEntitySchema = z.object({
+  function: z.literal("huntEntity"),
+  arguments: z.object({
+    entityType: z.string(),
+    quantity: z.number().int().min(1).optional(),
+  }),
+});

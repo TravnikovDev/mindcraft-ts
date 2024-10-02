@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 export const setModeFunctionSchema = {
   name: "setMode",
   description: "Enable or disable a specific mode.",
@@ -16,3 +18,11 @@ export const setModeFunctionSchema = {
     required: ["modeName", "enabled"],
   },
 };
+
+export const setModeSchema = z.object({
+  function: z.literal("setMode"),
+  arguments: z.object({
+    modeName: z.string(),
+    enabled: z.boolean(),
+  }),
+});
