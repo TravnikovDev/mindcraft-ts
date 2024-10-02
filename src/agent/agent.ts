@@ -305,7 +305,7 @@ export class Agent {
 
     // Main update loop
     // This update loop ensures that each update() is called one at a time, even if it takes longer than the interval
-    const INTERVAL = 300;
+    const INTERVAL = 500;
     let last = Date.now();
     setTimeout(async () => {
       while (true) {
@@ -334,8 +334,12 @@ export class Agent {
     if (this.isIdle()) {
       // If idle, initiate self-prompting with a default goal
       if (!this.self_prompter.on) {
-        const defaultGoal =
-          "Act for your own survival. Collect resources, upgrade tools, build shelter, and explore the world.";
+        const defaultGoal = `Act for your own survival. Start from axe, pickaxe and shovel. Collect resources, upgrade tools, build shelter, and explore the world.
+          Find a good spot to build a base and start a farm. Remember location of base, always return to it at night.
+          If you get lost, find a high point and look for your base. If you die, respawn and return to your base.
+          Gather resources only until you have a 64 pieces of it, then return to base to store them. 
+          Try to make a stone pickaxe, axe and shovel ASAP. Dig a mine to find iron and coal in 30 blocks away from your base.
+          All tunnels should be 3 blocks high and 3 block wide, always put torches on the walls of tunnels each 12 blocks`;
         this.self_prompter.start(defaultGoal);
         console.log(
           "Bot is idle. Starting self-prompting with goal:",
